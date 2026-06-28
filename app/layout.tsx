@@ -1,3 +1,6 @@
+import { Navbar } from "@/components/layout/navbar"
+import { Footer } from "@/components/layout/footer"
+
 import "./globals.css";
 import type { Metadata } from "next";
 
@@ -37,9 +40,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-background text-foreground antialiased">
-        {children}
-      </body>
+      <body className="min-h-screen bg-background text-foreground">
+  <Navbar />
+  {children}
+  <Footer />
+</body>
     </html>
   );
 }
