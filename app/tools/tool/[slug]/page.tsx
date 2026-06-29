@@ -19,6 +19,8 @@ import { UuidGenerator } from "@/features/tools/uuid-generator/component";
 import { Base64Encoder } from "@/features/tools/base64-encoder/component";
 import { Base64Decoder } from "@/features/tools/base64-decoder/component";
 import { JwtDecoder } from "@/features/tools/jwt-decoder/component";
+import { UrlEncoder } from "@/features/tools/url-encoder/component";
+import { Sha256Generator } from "@/features/tools/sha256-generator/component";
 
 type Props = {
   params: Promise<{
@@ -32,9 +34,7 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({
-  params,
-}: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
 
   const tool = getToolBySlug(slug);
@@ -77,9 +77,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function ToolPage({
-  params,
-}: Props) {
+export default async function ToolPage({ params }: Props) {
   const { slug } = await params;
 
   const tool = getToolBySlug(slug);
@@ -108,12 +106,12 @@ export default async function ToolPage({
       content: "",
       readingTime: "",
     },
-    allPosts
+    allPosts,
   );
 
   // Related developer tools
   const relatedTools = getRelatedTools(tool.keywords, tools).filter(
-    (t) => t.slug !== tool.slug
+    (t) => t.slug !== tool.slug,
   );
 
   const jsonLd = {
@@ -143,13 +141,9 @@ export default async function ToolPage({
       <div className="py-16">
         <JsonLd data={jsonLd} />
 
-        <h1 className="mb-4 text-3xl font-bold">
-          {tool.name}
-        </h1>
+        <h1 className="mb-4 text-3xl font-bold">{tool.name}</h1>
 
-        <p className="mb-10 text-muted-foreground">
-          {tool.description}
-        </p>
+        <p className="mb-10 text-muted-foreground">{tool.description}</p>
 
         {tool.slug === "json-formatter" && <JsonFormatter />}
         {tool.slug === "json-validator" && <JsonValidator />}
@@ -157,6 +151,8 @@ export default async function ToolPage({
         {tool.slug === "base64-encoder" && <Base64Encoder />}
         {tool.slug === "base64-decoder" && <Base64Decoder />}
         {tool.slug === "jwt-decoder" && <JwtDecoder />}
+        {tool.slug === "url-encoder" && <UrlEncoder />}
+        {tool.slug === "sha256-generator" && <Sha256Generator />}
 
         <RelatedTools tools={relatedTools} />
 

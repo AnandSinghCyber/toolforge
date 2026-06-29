@@ -74,7 +74,36 @@ export const tools: Tool[] = [
     ],
     featured: false,
   },
+  {
+  slug: "url-encoder",
+  name: "URL Encoder & Decoder",
+  description:
+    "Encode or decode URLs instantly with our free online URL Encoder & Decoder tool.",
+  category: "developer",
+  keywords: [
+    "url encoder",
+    "url decoder",
+    "encode url online",
+    "decode url online"
+  ],
+  featured: true
+},
+{
+  slug: "sha256-generator",
+  name: "SHA256 Generator",
+  description:
+    "Generate SHA256 hash instantly with our free online SHA256 hash generator.",
+  category: "developer",
+  keywords: [
+    "sha256 generator",
+    "sha256 hash online",
+    "generate sha256"
+  ],
+  featured: true
+}
 ];
+
+
 
 export function getToolBySlug(slug: string) {
   return tools.find((tool) => tool.slug === slug);
