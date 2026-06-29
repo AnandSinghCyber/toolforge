@@ -1,14 +1,29 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import rehypePrettyCode from "rehype-pretty-code";
+
 import { ReadingProgress } from "@/components/blog/reading-progress";
 import { Container } from "@/components/layout/container";
 import { JsonLd } from "@/components/seo/json-ld";
 
 import { siteConfig } from "@/lib/site";
-import { extractHeadings } from "@/features/blog/utils";
-import { getAllPosts, getPostBySlug } from "@/features/blog/lib";
+import { tools } from "@/lib/tools";
+
+import {
+  getAllPosts,
+  getPostBySlug,
+} from "@/features/blog/lib";
+
+import {
+  extractHeadings,
+} from "@/features/blog/utils";
+
+import {
+  getRelatedPosts,
+  getRelatedTools,
+} from "@/features/blog/related";
 
 interface Props {
   params: Promise<{
@@ -22,7 +37,9 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
   const { slug } = await params;
 
   const post = getPostBySlug(slug);
@@ -63,12 +80,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: post.frontmatter.title,
       description: post.frontmatter.description,
 
-      images: [`${siteConfig.url}${post.frontmatter.image}`],
+      images: [
+        `${siteConfig.url}${post.frontmatter.image}`,
+      ],
     },
   };
 }
 
-export default async function BlogPostPage({ params }: Props) {
+export default async function BlogPostPage({
+  params,
+}: Props) {
   const { slug } = await params;
 
   const post = getPostBySlug(slug);
@@ -78,6 +99,18 @@ export default async function BlogPostPage({ params }: Props) {
   }
 
   const headings = extractHeadings(post.content);
+
+  const allPosts = getAllPosts();
+
+  const relatedPosts = getRelatedPosts(
+    post,
+    allPosts
+  );
+
+  const relatedTools = getRelatedTools(
+    post.frontmatter.tags,
+    tools
+  );
 
   const articleJsonLd = {
     "@context": "https://schema.org",
@@ -134,10 +167,10 @@ export default async function BlogPostPage({ params }: Props) {
       <JsonLd data={breadcrumbJsonLd} />
 
       <div className="py-16">
-        {/* Title */}
-        <h1 className="mb-4 text-4xl font-bold">{post.frontmatter.title}</h1>
+        <h1 className="mb-4 text-4xl font-bold">
+          {post.frontmatter.title}
+        </h1>
 
-        {/* Meta */}
         <div className="mb-10 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <span>{post.frontmatter.author}</span>
 
@@ -150,10 +183,11 @@ export default async function BlogPostPage({ params }: Props) {
           <span>{post.readingTime}</span>
         </div>
 
-        {/* Table of Contents */}
         {headings.length > 0 && (
           <div className="mb-10 rounded-lg border p-6">
-            <h2 className="mb-4 text-lg font-semibold">Table of Contents</h2>
+            <h2 className="mb-4 text-lg font-semibold">
+              Table of Contents
+            </h2>
 
             <ul className="space-y-2 text-sm">
               {headings.map((heading) => (
@@ -163,15 +197,15 @@ export default async function BlogPostPage({ params }: Props) {
                     heading.depth === 1
                       ? ""
                       : heading.depth === 2
-                        ? "ml-4"
-                        : heading.depth === 3
-                          ? "ml-8"
-                          : "ml-12"
+                      ? "ml-4"
+                      : heading.depth === 3
+                      ? "ml-8"
+                      : "ml-12"
                   }
                 >
                   <a
                     href={`#${heading.id}`}
-                    className="hover:underline text-primary"
+                    className="text-primary hover:underline"
                   >
                     {heading.text}
                   </a>
@@ -181,7 +215,6 @@ export default async function BlogPostPage({ params }: Props) {
           </div>
         )}
 
-        {/* Blog Content */}
         <article className="prose dark:prose-invert max-w-none">
           <MDXRemote
             source={post.content}
@@ -199,6 +232,60 @@ export default async function BlogPostPage({ params }: Props) {
             }}
           />
         </article>
+
+        {relatedPosts.length > 0 && (
+          <section className="mt-16">
+            <h2 className="mb-6 text-2xl font-semibold">
+              Related Articles
+            </h2>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {relatedPosts.map((related) => (
+                <Link
+                  key={related.slug}
+                  href={`/blog/${related.slug}`}
+                >
+                  <div className="rounded-lg border p-4 transition hover:shadow">
+                    <h3 className="font-semibold">
+                      {related.frontmatter.title}
+                    </h3>
+
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {related.frontmatter.excerpt}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {relatedTools.length > 0 && (
+          <section className="mt-16">
+            <h2 className="mb-6 text-2xl font-semibold">
+              Related Tools
+            </h2>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {relatedTools.map((tool) => (
+                <Link
+                  key={tool.slug}
+                  href={`/tools/tool/${tool.slug}`}
+                >
+                  <div className="rounded-lg border p-4 transition hover:shadow">
+                    <h3 className="font-semibold">
+                      {tool.name}
+                    </h3>
+
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {tool.description}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </Container>
   );
