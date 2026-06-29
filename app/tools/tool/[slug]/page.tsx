@@ -8,7 +8,7 @@ import { siteConfig } from "@/lib/site";
 import { getToolBySlug, tools } from "@/lib/tools";
 
 import { getAllPosts } from "@/features/blog/lib";
-import { getRelatedPosts, getRelatedTools } from "@/features/blog/utils";
+import { getRelatedPosts, getRelatedTools } from "@/features/blog/related";
 
 import { RelatedPosts } from "@/components/blog/related-posts";
 import { RelatedTools } from "@/components/blog/related-tools";

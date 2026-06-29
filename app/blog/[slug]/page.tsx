@@ -16,10 +16,7 @@ import {
   getPostBySlug,
 } from "@/features/blog/lib";
 
-import {
-  extractHeadings,
-} from "@/features/blog/utils";
-
+import { extractHeadings } from "@/features/blog/utils";
 import {
   getRelatedPosts,
   getRelatedTools,
@@ -31,22 +28,32 @@ interface Props {
   }>;
 }
 
+/* ============================= */
+/* Static Params */
+/* ============================= */
+
 export async function generateStaticParams() {
   return getAllPosts().map((post) => ({
     slug: post.slug,
   }));
 }
 
+/* ============================= */
+/* Metadata */
+/* ============================= */
+
 export async function generateMetadata({
   params,
 }: Props): Promise<Metadata> {
   const { slug } = await params;
-
   const post = getPostBySlug(slug);
 
   if (!post) return {};
 
   const url = `${siteConfig.url}/blog/${slug}`;
+  const imageUrl = post.frontmatter.image
+    ? `${siteConfig.url}${post.frontmatter.image}`
+    : undefined;
 
   return {
     title: post.frontmatter.title,
@@ -67,31 +74,32 @@ export async function generateMetadata({
       description: post.frontmatter.description,
       url,
       type: "article",
-
-      images: [
-        {
-          url: `${siteConfig.url}${post.frontmatter.image}`,
-        },
-      ],
+      images: imageUrl
+        ? [
+            {
+              url: imageUrl,
+            },
+          ]
+        : undefined,
     },
 
     twitter: {
       card: "summary_large_image",
       title: post.frontmatter.title,
       description: post.frontmatter.description,
-
-      images: [
-        `${siteConfig.url}${post.frontmatter.image}`,
-      ],
+      images: imageUrl ? [imageUrl] : undefined,
     },
   };
 }
+
+/* ============================= */
+/* Page Component */
+/* ============================= */
 
 export default async function BlogPostPage({
   params,
 }: Props) {
   const { slug } = await params;
-
   const post = getPostBySlug(slug);
 
   if (!post) {
@@ -99,50 +107,47 @@ export default async function BlogPostPage({
   }
 
   const headings = extractHeadings(post.content);
-
   const allPosts = getAllPosts();
 
-  const relatedPosts = getRelatedPosts(
-    post,
-    allPosts
-  );
-
+  const relatedPosts = getRelatedPosts(post, allPosts);
   const relatedTools = getRelatedTools(
     post.frontmatter.tags,
     tools
   );
 
+  const url = `${siteConfig.url}/blog/${slug}`;
+  const imageUrl = post.frontmatter.image
+    ? `${siteConfig.url}${post.frontmatter.image}`
+    : undefined;
+
+  /* ============================= */
+  /* Structured Data */
+  /* ============================= */
+
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-
     headline: post.frontmatter.title,
     description: post.frontmatter.description,
-
-    image: `${siteConfig.url}${post.frontmatter.image}`,
-
+    image: imageUrl,
     datePublished: post.frontmatter.publishedAt,
-
     author: {
       "@type": "Person",
       name: post.frontmatter.author,
     },
-
     publisher: {
       "@type": "Organization",
       name: siteConfig.name,
     },
-
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${siteConfig.url}/blog/${slug}`,
+      "@id": url,
     },
   };
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-
     itemListElement: [
       {
         "@type": "ListItem",
@@ -154,7 +159,7 @@ export default async function BlogPostPage({
         "@type": "ListItem",
         position: 2,
         name: post.frontmatter.title,
-        item: `${siteConfig.url}/blog/${slug}`,
+        item: url,
       },
     ],
   };
@@ -167,21 +172,33 @@ export default async function BlogPostPage({
       <JsonLd data={breadcrumbJsonLd} />
 
       <div className="py-16">
+        {/* ============================= */}
+        {/* Title */}
+        {/* ============================= */}
+
         <h1 className="mb-4 text-4xl font-bold">
           {post.frontmatter.title}
         </h1>
 
+        {/* ============================= */}
+        {/* Meta Info */}
+        {/* ============================= */}
+
         <div className="mb-10 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <span>{post.frontmatter.author}</span>
-
           <span>•</span>
-
           <span>{post.frontmatter.publishedAt}</span>
-
-          <span>•</span>
-
-          <span>{post.readingTime}</span>
+          {post.readingTime && (
+            <>
+              <span>•</span>
+              <span>{post.readingTime}</span>
+            </>
+          )}
         </div>
+
+        {/* ============================= */}
+        {/* Table of Contents */}
+        {/* ============================= */}
 
         {headings.length > 0 && (
           <div className="mb-10 rounded-lg border p-6">
@@ -215,6 +232,10 @@ export default async function BlogPostPage({
           </div>
         )}
 
+        {/* ============================= */}
+        {/* Article Content */}
+        {/* ============================= */}
+
         <article className="prose dark:prose-invert max-w-none">
           <MDXRemote
             source={post.content}
@@ -232,6 +253,10 @@ export default async function BlogPostPage({
             }}
           />
         </article>
+
+        {/* ============================= */}
+        {/* Related Articles */}
+        {/* ============================= */}
 
         {relatedPosts.length > 0 && (
           <section className="mt-16">
@@ -259,6 +284,10 @@ export default async function BlogPostPage({
             </div>
           </section>
         )}
+
+        {/* ============================= */}
+        {/* Related Tools */}
+        {/* ============================= */}
 
         {relatedTools.length > 0 && (
           <section className="mt-16">
