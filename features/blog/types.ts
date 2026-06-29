@@ -14,4 +14,5 @@ export interface BlogPost {
   slug: string;
   frontmatter: BlogFrontmatter;
   content: string;
+  readingTime: string;
 }
