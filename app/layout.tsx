@@ -1,17 +1,20 @@
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
+import { siteConfig } from "@/lib/site"
 
-import "./globals.css";
-import type { Metadata } from "next";
+import "./globals.css"
+import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://toolforge-ruddy.vercel.app"),
+  metadataBase: new URL(siteConfig.url),
+
   title: {
-    default: "ToolForge - Free Online Developer & Student Tools",
-    template: "%s | ToolForge",
+    default: `${siteConfig.name} - Free Online Developer & Student Tools`,
+    template: `%s | ${siteConfig.name}`,
   },
-  description:
-    "ToolForge provides free online developer, student, productivity, and image tools.",
+
+  description: siteConfig.description,
+
   keywords: [
     "json formatter",
     "developer tools",
@@ -19,32 +22,46 @@ export const metadata: Metadata = {
     "online tools",
     "free tools",
   ],
+
   openGraph: {
-    title: "ToolForge - Free Online Tools",
-    description:
-      "Free modern online tools for developers, students and professionals.",
-    url: "https://toolforge-ruddy.vercel.app",
-    siteName: "ToolForge",
+    title: `${siteConfig.name} - Free Online Tools`,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    siteName: siteConfig.name,
     type: "website",
   },
+
+  twitter: {
+    card: "summary_large_image",
+    title: `${siteConfig.name} - Free Online Tools`,
+    description: siteConfig.description,
+  },
+
   robots: {
     index: true,
     follow: true,
   },
-};
+
+  alternates: {
+    canonical: siteConfig.url,
+    types: {
+      "application/rss+xml": `${siteConfig.url}/rss.xml`,
+    },
+  },
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground">
-  <Navbar />
-  {children}
-  <Footer />
-</body>
+        <Navbar />
+        {children}
+        <Footer />
+      </body>
     </html>
-  );
+  )
 }
