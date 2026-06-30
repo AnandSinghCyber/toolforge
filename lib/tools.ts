@@ -101,6 +101,42 @@ export const tools: Tool[] = [
   ],
   featured: true
 }
+{
+  slug: "md5-generator",
+  name: "MD5 Generator",
+  description:
+    "Generate MD5 hash instantly with our free online MD5 generator tool.",
+  category: "developer",
+  keywords: ["md5 generator", "md5 hash online"],
+  featured: false
+},
+{
+  slug: "sha1-generator",
+  name: "SHA1 Generator",
+  description:
+    "Generate SHA1 hash instantly with our free online SHA1 hash tool.",
+  category: "developer",
+  keywords: ["sha1 generator", "sha1 hash online"],
+  featured: false
+},
+{
+  slug: "timestamp-converter",
+  name: "Unix Timestamp Converter",
+  description:
+    "Convert Unix timestamps to readable date and time instantly.",
+  category: "developer",
+  keywords: ["unix timestamp converter", "epoch converter"],
+  featured: true
+},
+{
+  slug: "http-header-parser",
+  name: "HTTP Header Parser",
+  description:
+    "Parse and analyze HTTP headers instantly using our free tool.",
+  category: "developer",
+  keywords: ["http header parser", "analyze headers"],
+  featured: false
+}
 ];
 
 

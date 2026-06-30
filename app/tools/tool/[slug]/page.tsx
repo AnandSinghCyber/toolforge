@@ -8,7 +8,10 @@ import { siteConfig } from "@/lib/site";
 import { getToolBySlug, tools } from "@/lib/tools";
 
 import { getAllPosts } from "@/features/blog/lib";
-import { getRelatedPosts, getRelatedTools } from "@/features/blog/related";
+import {
+  getRelatedPosts,
+  getRelatedTools,
+} from "@/features/blog/related";
 
 import { RelatedPosts } from "@/components/blog/related-posts";
 import { RelatedTools } from "@/components/blog/related-tools";
@@ -22,6 +25,11 @@ import { JwtDecoder } from "@/features/tools/jwt-decoder/component";
 import { UrlEncoder } from "@/features/tools/url-encoder/component";
 import { Sha256Generator } from "@/features/tools/sha256-generator/component";
 
+import { Md5Generator } from "@/features/tools/md5-generator/component";
+import { Sha1Generator } from "@/features/tools/sha1-generator/component";
+import { TimestampConverter } from "@/features/tools/timestamp-converter/component";
+import { HttpHeaderParser } from "@/features/tools/http-header-parser/component";
+
 type Props = {
   params: Promise<{
     slug: string;
@@ -34,7 +42,9 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
   const { slug } = await params;
 
   const tool = getToolBySlug(slug);
@@ -77,7 +87,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ToolPage({ params }: Props) {
+export default async function ToolPage({
+  params,
+}: Props) {
   const { slug } = await params;
 
   const tool = getToolBySlug(slug);
@@ -86,7 +98,6 @@ export default async function ToolPage({ params }: Props) {
     notFound();
   }
 
-  // Find related blog posts using tool keywords
   const allPosts = getAllPosts();
 
   const relatedPosts = getRelatedPosts(
@@ -106,13 +117,13 @@ export default async function ToolPage({ params }: Props) {
       content: "",
       readingTime: "",
     },
-    allPosts,
+    allPosts
   );
 
-  // Related developer tools
-  const relatedTools = getRelatedTools(tool.keywords, tools).filter(
-    (t) => t.slug !== tool.slug,
-  );
+  const relatedTools = getRelatedTools(
+    tool.keywords,
+    tools
+  ).filter((t) => t.slug !== tool.slug);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -141,10 +152,15 @@ export default async function ToolPage({ params }: Props) {
       <div className="py-16">
         <JsonLd data={jsonLd} />
 
-        <h1 className="mb-4 text-3xl font-bold">{tool.name}</h1>
+        <h1 className="mb-4 text-3xl font-bold">
+          {tool.name}
+        </h1>
 
-        <p className="mb-10 text-muted-foreground">{tool.description}</p>
+        <p className="mb-10 text-muted-foreground">
+          {tool.description}
+        </p>
 
+        {/* Existing Tools */}
         {tool.slug === "json-formatter" && <JsonFormatter />}
         {tool.slug === "json-validator" && <JsonValidator />}
         {tool.slug === "uuid-generator" && <UuidGenerator />}
@@ -154,9 +170,25 @@ export default async function ToolPage({ params }: Props) {
         {tool.slug === "url-encoder" && <UrlEncoder />}
         {tool.slug === "sha256-generator" && <Sha256Generator />}
 
-        <RelatedTools tools={relatedTools} />
+        {/* New Developer Tools */}
+        {tool.slug === "md5-generator" && <Md5Generator />}
+        {tool.slug === "sha1-generator" && <Sha1Generator />}
+        {tool.slug === "timestamp-converter" && (
+          <TimestampConverter />
+        )}
+        {tool.slug === "http-header-parser" && (
+          <HttpHeaderParser />
+        )}
 
-        <RelatedPosts posts={relatedPosts} />
+        {/* Related Developer Tools */}
+        {relatedTools.length > 0 && (
+          <RelatedTools tools={relatedTools} />
+        )}
+
+        {/* Related Articles */}
+        {relatedPosts.length > 0 && (
+          <RelatedPosts posts={relatedPosts} />
+        )}
       </div>
     </Container>
   );
