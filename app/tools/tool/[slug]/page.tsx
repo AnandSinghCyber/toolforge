@@ -1,78 +1,65 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import type { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { Container } from "@/components/layout/container"
+import { JsonLd } from "@/components/seo/json-ld"
 
-import { Container } from "@/components/layout/container";
-import { JsonLd } from "@/components/seo/json-ld";
+import { siteConfig } from "@/lib/site"
+import { tools, getToolBySlug } from "@/lib/tools"
 
-import { siteConfig } from "@/lib/site";
-import { getToolBySlug, tools } from "@/lib/tools";
+import { JsonFormatter } from "@/features/tools/json-formatter/component"
+import { JsonValidator } from "@/features/tools/json-validator/component"
+import { UuidGenerator } from "@/features/tools/uuid-generator/component"
+import { Base64Encoder } from "@/features/tools/base64-encoder/component"
+import { Base64Decoder } from "@/features/tools/base64-decoder/component"
+import { JwtDecoder } from "@/features/tools/jwt-decoder/component"
+import { UrlEncoder } from "@/features/tools/url-encoder/component"
+import { Sha256Generator } from "@/features/tools/sha256-generator/component"
+import { Md5Generator } from "@/features/tools/md5-generator/component"
+import { Sha1Generator } from "@/features/tools/sha1-generator/component"
+import { TimestampConverter } from "@/features/tools/timestamp-converter/component"
+import { HttpHeaderParser } from "@/features/tools/http-header-parser/component"
 
-import { getAllPosts } from "@/features/blog/lib";
-import {
-  getRelatedPosts,
-  getRelatedTools,
-} from "@/features/blog/related";
-
-import { RelatedPosts } from "@/components/blog/related-posts";
-import { RelatedTools } from "@/components/blog/related-tools";
-
-import { JsonFormatter } from "@/features/tools/json-formatter/component";
-import { JsonValidator } from "@/features/tools/json-validator/component";
-import { UuidGenerator } from "@/features/tools/uuid-generator/component";
-import { Base64Encoder } from "@/features/tools/base64-encoder/component";
-import { Base64Decoder } from "@/features/tools/base64-decoder/component";
-import { JwtDecoder } from "@/features/tools/jwt-decoder/component";
-import { UrlEncoder } from "@/features/tools/url-encoder/component";
-import { Sha256Generator } from "@/features/tools/sha256-generator/component";
-
-import { Md5Generator } from "@/features/tools/md5-generator/component";
-import { Sha1Generator } from "@/features/tools/sha1-generator/component";
-import { TimestampConverter } from "@/features/tools/timestamp-converter/component";
-import { HttpHeaderParser } from "@/features/tools/http-header-parser/component";
-
-type Props = {
+interface Props {
   params: Promise<{
-    slug: string;
-  }>;
-};
+    slug: string
+  }>
+}
+
+/* ============================= */
+/* Static Generation */
+/* ============================= */
 
 export async function generateStaticParams() {
   return tools.map((tool) => ({
     slug: tool.slug,
-  }));
+  }))
 }
+
+/* ============================= */
+/* Metadata */
+/* ============================= */
 
 export async function generateMetadata({
   params,
 }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug } = await params
+  const tool = getToolBySlug(slug)
 
-  const tool = getToolBySlug(slug);
+  if (!tool) return {}
 
-  if (!tool) return {};
-
-  const url = `${siteConfig.url}/tools/tool/${tool.slug}`;
+  const url = `${siteConfig.url}/tools/tool/${tool.slug}`
 
   return {
-    title: tool.name,
-    description: tool.description,
+    title: `${tool.name} – Free Online Tool`,
+    description: `${tool.description} Fast, secure and completely free to use.`,
     keywords: tool.keywords,
-
-    authors: [
-      {
-        name: siteConfig.creator,
-      },
-    ],
-
-    creator: siteConfig.creator,
-    publisher: siteConfig.name,
 
     alternates: {
       canonical: url,
     },
 
     openGraph: {
-      title: tool.name,
+      title: `${tool.name} – Free Online Tool`,
       description: tool.description,
       url,
       siteName: siteConfig.name,
@@ -81,86 +68,77 @@ export async function generateMetadata({
 
     twitter: {
       card: "summary_large_image",
-      title: tool.name,
+      title: `${tool.name} – Free Online Tool`,
       description: tool.description,
     },
-  };
+  }
 }
 
-export default async function ToolPage({
-  params,
-}: Props) {
-  const { slug } = await params;
+/* ============================= */
+/* Page Component */
+/* ============================= */
 
-  const tool = getToolBySlug(slug);
+export default async function ToolPage({ params }: Props) {
+  const { slug } = await params
+  const tool = getToolBySlug(slug)
 
   if (!tool) {
-    notFound();
+    notFound()
   }
 
-  const allPosts = getAllPosts();
-
-  const relatedPosts = getRelatedPosts(
-    {
-      slug: tool.slug,
-      frontmatter: {
-        title: tool.name,
-        description: tool.description,
-        excerpt: tool.description,
-        category: tool.category,
-        publishedAt: "",
-        author: "",
-        image: "",
-        tags: tool.keywords,
-        featured: false,
-      },
-      content: "",
-      readingTime: "",
-    },
-    allPosts
-  );
-
-  const relatedTools = getRelatedTools(
-    tool.keywords,
-    tools
-  ).filter((t) => t.slug !== tool.slug);
-
-  const jsonLd = {
+  const toolJsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-
     name: tool.name,
     description: tool.description,
-
     applicationCategory: "DeveloperApplication",
     operatingSystem: "Any",
-
-    creator: {
-      "@type": "Organization",
-      name: siteConfig.name,
-    },
-
     offers: {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
     },
-  };
+  }
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `What is ${tool.name}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: tool.description,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Is ${tool.name} free to use?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. All tools on ToolForge are completely free to use.",
+        },
+      },
+    ],
+  }
 
   return (
     <Container>
-      <div className="py-16">
-        <JsonLd data={jsonLd} />
+      <JsonLd data={toolJsonLd} />
+      <JsonLd data={faqJsonLd} />
 
+      <div className="py-16">
         <h1 className="mb-4 text-3xl font-bold">
           {tool.name}
         </h1>
 
-        <p className="mb-10 text-muted-foreground">
+        <p className="mb-8 text-muted-foreground">
           {tool.description}
         </p>
 
-        {/* Existing Tools */}
+        {/* ================= Tool Render Switch ================= */}
+
         {tool.slug === "json-formatter" && <JsonFormatter />}
         {tool.slug === "json-validator" && <JsonValidator />}
         {tool.slug === "uuid-generator" && <UuidGenerator />}
@@ -169,27 +147,25 @@ export default async function ToolPage({
         {tool.slug === "jwt-decoder" && <JwtDecoder />}
         {tool.slug === "url-encoder" && <UrlEncoder />}
         {tool.slug === "sha256-generator" && <Sha256Generator />}
-
-        {/* New Developer Tools */}
         {tool.slug === "md5-generator" && <Md5Generator />}
         {tool.slug === "sha1-generator" && <Sha1Generator />}
-        {tool.slug === "timestamp-converter" && (
-          <TimestampConverter />
-        )}
-        {tool.slug === "http-header-parser" && (
-          <HttpHeaderParser />
-        )}
+        {tool.slug === "timestamp-converter" && <TimestampConverter />}
+        {tool.slug === "http-header-parser" && <HttpHeaderParser />}
 
-        {/* Related Developer Tools */}
-        {relatedTools.length > 0 && (
-          <RelatedTools tools={relatedTools} />
-        )}
+        {/* ================= Extra Content Section ================= */}
 
-        {/* Related Articles */}
-        {relatedPosts.length > 0 && (
-          <RelatedPosts posts={relatedPosts} />
-        )}
+        <section className="mt-16 max-w-2xl">
+          <h2 className="mb-4 text-xl font-semibold">
+            About {tool.name}
+          </h2>
+
+          <p className="text-muted-foreground">
+            {tool.name} helps developers and professionals perform quick
+            operations directly in the browser without installing software.
+            It is fast, secure and works entirely client-side.
+          </p>
+        </section>
       </div>
     </Container>
-  );
+  )
 }
