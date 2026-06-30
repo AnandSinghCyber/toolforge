@@ -20,13 +20,11 @@ import { TimestampConverter } from "@/features/tools/timestamp-converter/compone
 import { HttpHeaderParser } from "@/features/tools/http-header-parser/component"
 
 interface Props {
-  params: Promise<{
-    slug: string
-  }>
+  params: Promise<{ slug: string }>
 }
 
 /* ============================= */
-/* Static Generation */
+/* Static Params */
 /* ============================= */
 
 export async function generateStaticParams() {
@@ -51,13 +49,9 @@ export async function generateMetadata({
 
   return {
     title: `${tool.name} – Free Online Tool`,
-    description: `${tool.description} Fast, secure and completely free to use.`,
+    description: `${tool.description} Fast, secure and completely free.`,
     keywords: tool.keywords,
-
-    alternates: {
-      canonical: url,
-    },
-
+    alternates: { canonical: url },
     openGraph: {
       title: `${tool.name} – Free Online Tool`,
       description: tool.description,
@@ -65,79 +59,68 @@ export async function generateMetadata({
       siteName: siteConfig.name,
       type: "website",
     },
-
-    twitter: {
-      card: "summary_large_image",
-      title: `${tool.name} – Free Online Tool`,
-      description: tool.description,
-    },
   }
 }
 
 /* ============================= */
-/* Page Component */
+/* Tool Explanation Map */
+/* ============================= */
+
+function getToolContent(slug: string) {
+  const contentMap: Record<string, any> = {
+    "sha256-generator": {
+      explanation:
+        "SHA256 is a secure hashing algorithm used in blockchain, authentication systems, and digital signatures.",
+      exampleInput: "hello",
+      exampleOutput:
+        "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+      codeSnippet: `crypto.subtle.digest("SHA-256", data)`
+    },
+
+    "url-encoder": {
+      explanation:
+        "URL encoding converts unsafe characters into percent-encoded format so they can be transmitted over the internet.",
+      exampleInput: "hello world",
+      exampleOutput: "hello%20world",
+      codeSnippet: `encodeURIComponent("hello world")`
+    },
+
+    "md5-generator": {
+      explanation:
+        "MD5 generates a 128-bit hash value and is commonly used for checksum verification.",
+      exampleInput: "hello",
+      exampleOutput: "5d41402abc4b2a76b9719d911017c592",
+      codeSnippet: `crypto.subtle.digest("MD5", data)`
+    },
+  }
+
+  return contentMap[slug] || null
+}
+
+/* ============================= */
+/* Page */
 /* ============================= */
 
 export default async function ToolPage({ params }: Props) {
   const { slug } = await params
   const tool = getToolBySlug(slug)
 
-  if (!tool) {
-    notFound()
-  }
+  if (!tool) notFound()
 
-  const toolJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: tool.name,
-    description: tool.description,
-    applicationCategory: "DeveloperApplication",
-    operatingSystem: "Any",
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-    },
-  }
-
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: `What is ${tool.name}?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: tool.description,
-        },
-      },
-      {
-        "@type": "Question",
-        name: `Is ${tool.name} free to use?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Yes. All tools on ToolForge are completely free to use.",
-        },
-      },
-    ],
-  }
+  const dynamicContent = getToolContent(slug)
 
   return (
     <Container>
-      <JsonLd data={toolJsonLd} />
-      <JsonLd data={faqJsonLd} />
-
       <div className="py-16">
         <h1 className="mb-4 text-3xl font-bold">
           {tool.name}
         </h1>
 
-        <p className="mb-8 text-muted-foreground">
+        <p className="mb-10 text-muted-foreground">
           {tool.description}
         </p>
 
-        {/* ================= Tool Render Switch ================= */}
+        {/* ================= Tool UI ================= */}
 
         {tool.slug === "json-formatter" && <JsonFormatter />}
         {tool.slug === "json-validator" && <JsonValidator />}
@@ -152,19 +135,45 @@ export default async function ToolPage({ params }: Props) {
         {tool.slug === "timestamp-converter" && <TimestampConverter />}
         {tool.slug === "http-header-parser" && <HttpHeaderParser />}
 
-        {/* ================= Extra Content Section ================= */}
+        {/* ================= SEO Content Block ================= */}
 
-        <section className="mt-16 max-w-2xl">
-          <h2 className="mb-4 text-xl font-semibold">
-            About {tool.name}
-          </h2>
+        {dynamicContent && (
+          <section className="mt-16 max-w-3xl space-y-6">
+            <h2 className="text-xl font-semibold">
+              How {tool.name} Works
+            </h2>
 
-          <p className="text-muted-foreground">
-            {tool.name} helps developers and professionals perform quick
-            operations directly in the browser without installing software.
-            It is fast, secure and works entirely client-side.
-          </p>
-        </section>
+            <p className="text-muted-foreground">
+              {dynamicContent.explanation}
+            </p>
+
+            <div>
+              <h3 className="font-semibold">Example</h3>
+              <p className="text-sm text-muted-foreground">
+                Input:
+              </p>
+              <pre className="bg-muted p-4 rounded-md text-sm">
+                {dynamicContent.exampleInput}
+              </pre>
+
+              <p className="text-sm text-muted-foreground mt-4">
+                Output:
+              </p>
+              <pre className="bg-muted p-4 rounded-md text-sm">
+                {dynamicContent.exampleOutput}
+              </pre>
+            </div>
+
+            <div>
+              <h3 className="font-semibold">
+                JavaScript Example
+              </h3>
+              <pre className="bg-muted p-4 rounded-md text-sm">
+                {dynamicContent.codeSnippet}
+              </pre>
+            </div>
+          </section>
+        )}
       </div>
     </Container>
   )
