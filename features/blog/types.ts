@@ -1,4 +1,4 @@
-export interface BlogFrontmatter {
+export interface Frontmatter {
   title: string;
   description: string;
   excerpt: string;
@@ -12,7 +12,8 @@ export interface BlogFrontmatter {
 
 export interface BlogPost {
   slug: string;
-  frontmatter: BlogFrontmatter;
   content: string;
-  readingTime: string;
+ readingTime: string;
+  updatedAt: string;
+  frontmatter: Frontmatter;
 }

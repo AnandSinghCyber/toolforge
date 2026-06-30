@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import readingTime from "reading-time";
+
 import { BlogPost } from "./types";
 
 const blogDirectory = path.join(process.cwd(), "content/blog");
@@ -21,7 +22,9 @@ export function getAllPosts(): BlogPost[] {
     .map((file) => {
       const slug = file.replace(".mdx", "");
       const fullPath = path.join(blogDirectory, file);
+
       const fileContent = fs.readFileSync(fullPath, "utf8");
+      const stats = fs.statSync(fullPath);
 
       const { data, content } = matter(fileContent);
 
@@ -35,6 +38,7 @@ export function getAllPosts(): BlogPost[] {
         frontmatter: data as BlogPost["frontmatter"],
         content,
         readingTime: readingTime(content).text,
+        updatedAt: stats.mtime.toISOString(),
       };
     })
     .filter(Boolean) as BlogPost[];
@@ -56,6 +60,8 @@ export function getPostBySlug(slug: string): BlogPost | null {
   }
 
   const fileContent = fs.readFileSync(fullPath, "utf8");
+  const stats = fs.statSync(fullPath);
+
   const { data, content } = matter(fileContent);
 
   if (!validateFrontmatter(data)) {
@@ -68,6 +74,7 @@ export function getPostBySlug(slug: string): BlogPost | null {
     frontmatter: data as BlogPost["frontmatter"],
     content,
     readingTime: readingTime(content).text,
+    updatedAt: stats.mtime.toISOString(),
   };
 }
 
