@@ -53,12 +53,20 @@ export async function generateMetadata({
     keywords: tool.keywords,
     alternates: { canonical: url },
     openGraph: {
-      title: `${tool.name} – Free Online Tool`,
-      description: tool.description,
-      url,
-      siteName: siteConfig.name,
-      type: "website",
+  title: `${tool.name} – Free Online Tool`,
+  description: `${tool.description} Fast, secure and completely free.`,
+  url,
+  siteName: siteConfig.name,
+  type: "website",
+  images: [
+    {
+      url: `${siteConfig.url}/og-image.png`,
+      width: 1200,
+      height: 630,
+      alt: tool.name,
     },
+  ],
+},
   }
 }
 
@@ -108,6 +116,69 @@ export default async function ToolPage({ params }: Props) {
   if (!tool) notFound()
 
   const dynamicContent = getToolContent(slug)
+  const softwareJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+
+  name: tool.name,
+  description: tool.description,
+
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Any",
+
+  url: `${siteConfig.url}/tools/tool/${tool.slug}`,
+
+  creator: {
+    "@type": "Organization",
+    name: siteConfig.name,
+  },
+
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+}
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: `What is ${tool.name}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: tool.description,
+      },
+    },
+    {
+      "@type": "Question",
+      name: `Is ${tool.name} free?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. ToolForge provides this tool completely free of charge.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: `Is ${tool.name} safe to use?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. Most ToolForge utilities process data directly in your browser, so your information is not uploaded to our servers.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: `Do I need to install anything?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "No. This tool works directly in your browser without any installation or registration.",
+      },
+    },
+  ],
+}
 
   return (
     <Container>
