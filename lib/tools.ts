@@ -100,7 +100,7 @@ export const tools: Tool[] = [
     "generate sha256"
   ],
   featured: true
-}
+},
 {
   slug: "md5-generator",
   name: "MD5 Generator",
